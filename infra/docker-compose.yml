@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://resavo:resavo_pass@db:5432/resavo_db
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=resavo_super_secret_key_2026
+    depends_on:
+      - db
+      - redis
+
+  admin_web:
+    build:
+      context: ../apps/admin_web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+
+  db:
+    image: postgis/postgis:15-3.3
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=resavo
+      - POSTGRES_PASSWORD=resavo_pass
+      - POSTGRES_DB=resavo_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
